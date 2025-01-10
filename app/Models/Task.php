@@ -8,11 +8,11 @@ class Task extends Model
 {
     public function user()
     {
-        $this->belongsTo(User::class);
+        $this->belongsTo(User::class,'created_by');
     }
     public function project()
     {
-        $this->belongsTo(Project::class);
+        $this->belongsTo(Project::class,'project_id');
     }
     protected $table = 'tasks';
     protected $fillable = [

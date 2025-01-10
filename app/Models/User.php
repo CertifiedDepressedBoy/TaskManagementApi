@@ -18,7 +18,7 @@ class User extends Authenticatable
     }
     public function tasks()
     {
-        $this->hasMany(Task::class);
+        $this->hasManyThrough(Task::class,Project::class);
     }
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable , HasApiTokens;

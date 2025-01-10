@@ -19,3 +19,7 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+# Allow all origins (disable CORS)
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "*"
+Header set Access-Control-Allow-Headers "*"

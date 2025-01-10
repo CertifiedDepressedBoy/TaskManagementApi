@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -32,12 +33,12 @@ class ProjectController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required',
-                'deadline' => 'required|date'
+                'deadline' => 'required|after_or_equal:now'
             ]);
             $project = Project::create([
                 'name' => $request->name,
                 'description' => $request->description,
-                'deadline' => $request->deadline,
+                'deadline' => Carbon::parse($request->deadline) ,
                 'created_by' => $request->user()->id
             ]);
             return response()->json([
@@ -84,8 +85,8 @@ class ProjectController extends Controller
             $project->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'deadline' => $request->deadline,
-                'created_by' => $request->user()->name
+                'deadline' => Carbon::parse($request->deadline),
+                'created_by' => $request->user()->id
             ]);
             return response()->json([
                 'message' => 'Projects updated successfully...',
@@ -103,7 +104,7 @@ class ProjectController extends Controller
     public function destroy(Request $request, $id): JsonResponse
     {
         $project = Project::where('id', $id)->first();
-        if ($project && $project->created_by == $request->user()->id) {
+        if ($project) {
             $project->delete();
             return response()->json([
                 'message' => 'Projects deleted successfully...',

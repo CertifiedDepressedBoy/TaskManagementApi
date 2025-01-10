@@ -31,6 +31,6 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
     <extensions>
-<bootstrap class="Clockwork\Support\Laravel\Tests\ClockworkExtension" />
-</extensions>
+        <bootstrap class="Clockwork\Support\Laravel\Tests\ClockworkExtension" />
+    </extensions>
 </phpunit>

@@ -98,8 +98,12 @@ class AuthController extends Controller
     public function data():JsonResponse
     {
         $user = User::get();
-        $project = Project::get();
-        $task = Task::get();
+        $project = Project::select('projects.id as projects_id', 'projects.name', 'projects.description', 'projects.deadline', 'projects.created_at', 'users.name as user_name')
+        ->leftJoin('users', 'users.id', 'projects.created_by')
+        ->get();
+        $task = Task::select('tasks.id', 'tasks.title', 'tasks.description', 'tasks.status', 'tasks.priority', 'tasks.due_date', 'users.name as user_name')
+            ->leftJoin('users', 'users.id', 'tasks.created_by')
+            ->get();
 
         return response()->json([
             'message' => 'success',

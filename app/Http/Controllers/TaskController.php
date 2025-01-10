@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Project;
+use App\Models\task_assignment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Laravel\Sanctum\HasApiTokens;
@@ -33,11 +35,11 @@ class TaskController extends Controller
     public function store($project_id, Request $request): JsonResponse
     {
         $project = Project::find($project_id);
-        if (!$project && $request->user()->id != $project->created_by) {
+        if (!$project) {
             return response()->json([
-                'message' => 'Unauthenticated',
+                'message' => 'Project not found',
                 'success' => false
-            ], 403);
+            ], 404);
         } else {
             $request->validate([
                 'title' => 'required|string',
@@ -51,12 +53,22 @@ class TaskController extends Controller
                 'status' => $request->status,
                 'priority' => $request->priority,
                 'due_date' => $request->due_date,
-                'created_by' =>$request->user()->name
+                'created_by' =>$request->user()->id
             ]);
+            $users = User::where('role','Member')->get();
+            foreach($users as $user){
+                task_assignment::create([
+                    'task_id' => $task->id,
+                    'user_id' => $user->id,
+                    'status' => 'pending'
+                ]);
+
+            }
+
             return response()->json([
                 'message' => 'Task created successfully...',
                 'success' => true,
-                'data' => $request->all()
+                'data' => $task
             ], 200);
         }
     }
@@ -132,7 +144,7 @@ class TaskController extends Controller
     }
 
     public function destroy($project_id, $id): JsonResponse
-    { {
+    {
             $project = Project::find($project_id);
 
             $task = Task::where('project_id', $project_id)
@@ -149,6 +161,6 @@ class TaskController extends Controller
                     'success' => false
                 ], 404);
             }
-        }
+
     }
 }
