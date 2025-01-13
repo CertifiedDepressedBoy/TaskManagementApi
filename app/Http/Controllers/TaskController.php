@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Task;
-use App\Models\Project;
-use App\Models\task_assignment;
 use App\Models\User;
+use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Models\task_assignment;
 use Illuminate\Http\JsonResponse;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Auth;
@@ -17,9 +18,10 @@ class TaskController extends Controller
 
     public function index($project_id): JsonResponse
     {
-        $task = Task::select('tasks.id', 'tasks.title', 'tasks.description', 'tasks.status', 'tasks.priority', 'tasks.due_date','users.name as user_name')
+
+        $task = Task::select('tasks.id', 'tasks.project_id' ,'tasks.title', 'tasks.description', 'tasks.status', 'tasks.priority','tasks.assign_to', 'tasks.due_date','users.name as user_name')
             ->leftJoin('users','users.id','tasks.created_by')
-            ->where('project_id', $project_id)->get();
+            ->where('tasks.project_id', $project_id)->get();
         if ($task->isEmpty()) {
             return response()->json([
                 'message' => 'no task found',
@@ -34,6 +36,7 @@ class TaskController extends Controller
 
     public function store($project_id, Request $request): JsonResponse
     {
+        $assign = User::where('role', 'Member')->get();
         $project = Project::find($project_id);
         if (!$project) {
             return response()->json([
@@ -46,30 +49,36 @@ class TaskController extends Controller
                 'description' => 'required',
                 'due_date' => 'required|date',
             ]);
-            $task = Task::create([
-                'project_id' => $project_id,
-                'title' => $request->title,
-                'description' => $request->description,
-                'status' => $request->status,
-                'priority' => $request->priority,
-                'due_date' => $request->due_date,
-                'created_by' =>$request->user()->id
-            ]);
-            $users = User::where('role','Member')->get();
-            foreach($users as $user){
+            $users = User::where('role', 'Member')->get();
+            $assignedUser = $users->firstWhere('id', $request->assign_to);
+            if($assignedUser){
+                $task = Task::create([
+                    'project_id' => $project_id,
+                    'title' => $request->title,
+                    'description' => $request->description,
+                    'status' => $request->status,
+                    'priority' => $request->priority,
+                    'due_date' => Carbon::parse($request->due_date),
+                    'assign_to' => $request->assign_to
+                ]);
+
                 task_assignment::create([
                     'task_id' => $task->id,
-                    'user_id' => $user->id,
+                    'user_id' => $request->assign_to,
                     'status' => 'pending'
                 ]);
 
-            }
-
-            return response()->json([
-                'message' => 'Task created successfully...',
-                'success' => true,
-                'data' => $task
-            ], 200);
+                return response()->json([
+                    'message' => 'Task created successfully...',
+                    'success' => true,
+                    'data' => $task
+                ], 200);
+             }else{
+                return response()->json([
+                    'message' => 'Only Assign to Member',
+                    'success' => false
+                ],400);
+             }
         }
     }
 
@@ -121,7 +130,7 @@ class TaskController extends Controller
                     'description' => $request->description,
                     'status' => $request->status,
                     'priority' => $request->priority,
-                    'due_date' => $request->due_date,
+                    'due_date' => Carbon::parse($request->due_date),
                     'created_by' => $request->user()->id
                 ]);
                 return response()->json([

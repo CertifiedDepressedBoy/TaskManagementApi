@@ -22,6 +22,6 @@ class Task extends Model
         'status',
         'priority',
         'due_date',
-        'created_by'
+        'assign_to',
     ];
 }

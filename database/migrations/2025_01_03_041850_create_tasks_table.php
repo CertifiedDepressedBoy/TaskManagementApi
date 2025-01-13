@@ -16,10 +16,10 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             $table->char('title',255);
             $table->text('description');
-            $table->enum('status',['pending','in_progress','complete'])->nullable()->default('pending');
-            $table->enum('priority',['low','medium','high'])->nullable()->default('low');
+            $table->enum('status',['pending','in_progress','complete'])->default('pending');
+            $table->enum('priority',['low','medium','high'])->default('low');
             $table->date('due_date');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('assign_to')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

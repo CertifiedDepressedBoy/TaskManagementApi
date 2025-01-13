@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\TaskAssignmentController;
 
 Route::post('login',[AuthController::class,'login'])->name('login');
 Route::post('register',[AuthController::class,'register'])->name('register');
@@ -27,6 +28,9 @@ Route::middleware(['auth:sanctum'])->group(function(){
     Route::get('projects/{project_id}/tasks', [TaskController::class,'index']);
     Route::get('projects/{project_id}/tasks/{task}', [TaskController::class,'show']);
 
+    //tasks assignment
+    Route::patch('/projects/{project_id}/tasks/{task}/{user_id}', [TaskAssignmentController::class, 'work']);
+
     Route::middleware('admin')->group(function(){
         //projects
         Route::post('/projects', [ProjectController::class,'store']);
@@ -37,6 +41,8 @@ Route::middleware(['auth:sanctum'])->group(function(){
         Route::post('/projects/{project_id}/tasks',[TaskController::class,'store']);
         Route::put('/projects/{project_id}/tasks/{task}',[TaskController::class,'update']);
         Route::delete('/projects/{project_id}/tasks/{task}',[TaskController::class,'destroy']);
+
+
     });
 
 
